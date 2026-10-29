@@ -1,0 +1,605 @@
+{
+ "version": "1.0",
+ "documents": {
+  "attention": {
+   "url": "https://arxiv.org/pdf/1706.03762",
+   "title": "Attention Is All You Need (Vaswani et al., 2017)"
+  },
+  "reference_paper": {
+   "url": "https://arxiv.org/pdf/2008.07779",
+   "title": "Sales forecasting paper used by the reference notebook (arXiv 2008.07779)"
+  },
+  "rag_paper": {
+   "url": "https://arxiv.org/pdf/2005.11401",
+   "title": "Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks (Lewis et al., 2020)"
+  },
+  "nist_ai_rmf": {
+   "url": "https://nvlpubs.nist.gov/nistpubs/ai/NIST.AI.100-1.pdf",
+   "title": "NIST AI Risk Management Framework 1.0 (NIST AI 100-1)"
+  }
+ },
+ "questions": [
+  {
+   "id": "attention_q1",
+   "doc_id": "attention",
+   "category": "factual",
+   "question": "How many identical layers make up the Transformer's encoder stack?",
+   "gold_answer": "The encoder is a stack of N = 6 identical layers.",
+   "gold_pages": [
+    3
+   ],
+   "evidence": [
+    "The encoder is composed of a stack of N = 6 identical layers."
+   ],
+   "keywords": [
+    "6"
+   ]
+  },
+  {
+   "id": "attention_q2",
+   "doc_id": "attention",
+   "category": "factual",
+   "question": "Which optimizer was used to train the Transformer, and with what beta values?",
+   "gold_answer": "The Adam optimizer with beta1 = 0.9 and beta2 = 0.98 (epsilon = 1e-9).",
+   "gold_pages": [
+    7
+   ],
+   "evidence": [
+    "We used the Adam optimizer [20] with β1 = 0.9, β2 = 0.98"
+   ],
+   "keywords": [
+    "Adam",
+    "0.98"
+   ]
+  },
+  {
+   "id": "attention_q3",
+   "doc_id": "attention",
+   "category": "factual",
+   "question": "What kind of functions does the Transformer use for its fixed positional encodings?",
+   "gold_answer": "Sine and cosine functions of different frequencies.",
+   "gold_pages": [
+    6
+   ],
+   "evidence": [
+    "In this work, we use sine and cosine functions of different frequencies:"
+   ],
+   "keywords": [
+    "sine",
+    "cosine"
+   ]
+  },
+  {
+   "id": "attention_q4",
+   "doc_id": "attention",
+   "category": "numeric_table",
+   "question": "What BLEU score did the Transformer base model achieve on the WMT 2014 English-to-German newstest2014 test?",
+   "gold_answer": "27.3 BLEU.",
+   "gold_pages": [
+    8
+   ],
+   "evidence": [
+    "Transformer (base model) 27.3 38.1"
+   ],
+   "keywords": [
+    "27.3"
+   ]
+  },
+  {
+   "id": "attention_q5",
+   "doc_id": "attention",
+   "category": "numeric_table",
+   "question": "What WSJ Section 23 F1 score did the 4-layer Transformer achieve on English constituency parsing in the semi-supervised setting?",
+   "gold_answer": "92.7 F1.",
+   "gold_pages": [
+    10
+   ],
+   "evidence": [
+    "Transformer (4 layers) semi-supervised 92.7"
+   ],
+   "keywords": [
+    "92.7"
+   ]
+  },
+  {
+   "id": "attention_q6",
+   "doc_id": "attention",
+   "category": "multi_hop",
+   "question": "What is the inner-layer dimensionality of the position-wise feed-forward network in the base Transformer, and what is it in the big Transformer?",
+   "gold_answer": "2048 in the base model and 4096 in the big model.",
+   "gold_pages": [
+    5,
+    9
+   ],
+   "evidence": [
+    "The dimensionality of input and output is dmodel = 512, and the inner-layer has dimensionality",
+    "big 6 1024 4096 16"
+   ],
+   "keywords": [
+    "2048",
+    "4096"
+   ]
+  },
+  {
+   "id": "attention_q7",
+   "doc_id": "attention",
+   "category": "multi_hop",
+   "question": "How many attention heads does the big Transformer use, and given that the per-head key dimension is dmodel/h, what is its per-head key dimension?",
+   "gold_answer": "16 heads; with dmodel = 1024, dk = 1024/16 = 64.",
+   "gold_pages": [
+    5,
+    9
+   ],
+   "evidence": [
+    "For each of these we use dk = dv = dmodel /h = 64.",
+    "big 6 1024 4096 16"
+   ],
+   "keywords": [
+    "16",
+    "64"
+   ]
+  },
+  {
+   "id": "attention_q8",
+   "doc_id": "attention",
+   "category": "summary",
+   "question": "What problem does this paper address and what is its main approach?",
+   "gold_answer": "Dominant sequence transduction models rely on recurrent or convolutional networks, whose sequential computation limits parallelization and makes training slow. The paper proposes the Transformer, an encoder-decoder architecture based solely on (multi-head self-)attention with no recurrence or convolution, which achieves state-of-the-art BLEU on WMT 2014 English-German and English-French translation at a fraction of the training cost and also generalizes to English constituency parsing.",
+   "gold_pages": [
+    1,
+    2
+   ],
+   "evidence": [
+    "based solely on attention mechanisms, dispensing with recurrence and convolutions",
+    "This inherently sequential nature precludes parallelization within training examples"
+   ],
+   "keywords": []
+  },
+  {
+   "id": "attention_q9",
+   "doc_id": "attention",
+   "category": "unanswerable",
+   "question": "How much did it cost in US dollars to train the big Transformer model on the English-to-German task?",
+   "gold_answer": "NOT_IN_DOCUMENT",
+   "gold_pages": [],
+   "evidence": [],
+   "keywords": []
+  },
+  {
+   "id": "reference_paper_q1",
+   "doc_id": "reference_paper",
+   "category": "factual",
+   "question": "Which company provided the daily sales dataset used in this sales forecasting study?",
+   "gold_answer": "1C Company, one of the largest Russian software firms.",
+   "gold_pages": [
+    1
+   ],
+   "evidence": [
+    "kindly provided by one of the largest Russian software firms - 1C Company."
+   ],
+   "keywords": [
+    "1C"
+   ]
+  },
+  {
+   "id": "reference_paper_q2",
+   "doc_id": "reference_paper",
+   "category": "factual",
+   "question": "To what range was the Item Count prediction feature clipped during data cleaning?",
+   "gold_answer": "It was clipped to the range [0, 20].",
+   "gold_pages": [
+    2
+   ],
+   "evidence": [
+    "we clipped the prediction feature Item Count to match the prediction output requirement [0,20]."
+   ],
+   "keywords": [
+    "20"
+   ]
+  },
+  {
+   "id": "reference_paper_q3",
+   "doc_id": "reference_paper",
+   "category": "factual",
+   "question": "On what platform were the models implemented, and how much RAM did it provide?",
+   "gold_answer": "Google Colab with 25 GB RAM and GPU support.",
+   "gold_pages": [
+    5
+   ],
+   "evidence": [
+    "We implemented our models in Google Colab with 25 GB RAM and GPU support."
+   ],
+   "keywords": [
+    "Colab",
+    "25"
+   ]
+  },
+  {
+   "id": "reference_paper_q4",
+   "doc_id": "reference_paper",
+   "category": "numeric_table",
+   "question": "What was the optimal learning rate (eta) found for the XGBoost model?",
+   "gold_answer": "0.148.",
+   "gold_pages": [
+    4
+   ],
+   "evidence": [
+    "eta Learning Rate 0.148"
+   ],
+   "keywords": [
+    "0.148"
+   ]
+  },
+  {
+   "id": "reference_paper_q5",
+   "doc_id": "reference_paper",
+   "category": "numeric_table",
+   "question": "What test RMSE did the LSTM model achieve?",
+   "gold_answer": "0.92417.",
+   "gold_pages": [
+    6
+   ],
+   "evidence": [
+    "LSTM 0.804657 0.889786 0.92417"
+   ],
+   "keywords": [
+    "0.92417"
+   ]
+  },
+  {
+   "id": "reference_paper_q6",
+   "doc_id": "reference_paper",
+   "category": "multi_hop",
+   "question": "Which month of data was held out for validation, and what validation RMSE did the best-performing model achieve?",
+   "gold_answer": "The 33rd month was used for validation; the best model, XGBoost, achieved a validation RMSE of 0.807264.",
+   "gold_pages": [
+    4,
+    6
+   ],
+   "evidence": [
+    "we split the first 32 months for training and the 33rd month data was sliced out",
+    "XGBoost 0.764467 0.807264 0.87815"
+   ],
+   "keywords": [
+    "33",
+    "0.807264"
+   ]
+  },
+  {
+   "id": "reference_paper_q7",
+   "doc_id": "reference_paper",
+   "category": "multi_hop",
+   "question": "Whose prior work inspired the LSTM-based architecture combining static and dynamic features, and what optimal batch size was found for that LSTM network?",
+   "gold_answer": "It was inspired by Esteban et al. (2016); the optimal batch size was 512 samples.",
+   "gold_pages": [
+    2,
+    5
+   ],
+   "evidence": [
+    "Esteban, et al. (2016) have demonstrated in their paper, how static and dynamic features",
+    "The optimal value determined for batch size is 512 samples"
+   ],
+   "keywords": [
+    "Esteban",
+    "512"
+   ]
+  },
+  {
+   "id": "reference_paper_q8",
+   "doc_id": "reference_paper",
+   "category": "summary",
+   "question": "What problem does this paper address and what is its main approach?",
+   "gold_answer": "The paper addresses the Kaggle 'Predict Future Sales' problem: forecasting next month's total sales for every product and store from 1C Company's daily sales time series. After EDA and feature engineering (grid format, revenue/count/price features, lags), it compares XGBoost, an LSTM-based network combining static and dynamic features, and ARIMA using RMSE, finding XGBoost performs best.",
+   "gold_pages": [
+    1,
+    6
+   ],
+   "evidence": [
+    "The objective is to predict the total sales for every product and store in",
+    "Our best performing model is the XGBoost"
+   ],
+   "keywords": []
+  },
+  {
+   "id": "reference_paper_q9",
+   "doc_id": "reference_paper",
+   "category": "unanswerable",
+   "question": "What (p, d, q) order was used for the ARIMA models in this study?",
+   "gold_answer": "NOT_IN_DOCUMENT",
+   "gold_pages": [],
+   "evidence": [],
+   "keywords": []
+  },
+  {
+   "id": "rag_paper_q1",
+   "doc_id": "rag_paper",
+   "category": "factual",
+   "question": "Which pre-trained model is used as the generator component in the RAG models?",
+   "gold_answer": "BART-large, a pre-trained seq2seq transformer with 400M parameters.",
+   "gold_pages": [
+    3
+   ],
+   "evidence": [
+    "We use BART-large [32], a pre-trained seq2seq transformer [58] with 400M parameters"
+   ],
+   "keywords": [
+    "BART"
+   ]
+  },
+  {
+   "id": "rag_paper_q2",
+   "doc_id": "rag_paper",
+   "category": "factual",
+   "question": "Which Wikipedia dump is used as the non-parametric knowledge source in the main experiments?",
+   "gold_answer": "The December 2018 Wikipedia dump.",
+   "gold_pages": [
+    4
+   ],
+   "evidence": [
+    "Karpukhin et al. [26], we use the December 2018 dump"
+   ],
+   "keywords": [
+    "December 2018"
+   ]
+  },
+  {
+   "id": "rag_paper_q3",
+   "doc_id": "rag_paper",
+   "category": "factual",
+   "question": "What automatic metric is used to evaluate Jeopardy question generation?",
+   "gold_answer": "The SQuAD-tuned Q-BLEU-1 metric.",
+   "gold_pages": [
+    5
+   ],
+   "evidence": [
+    "we evaluate using the SQuAD-tuned Q-BLEU-1 metric"
+   ],
+   "keywords": [
+    "Q-BLEU"
+   ]
+  },
+  {
+   "id": "rag_paper_q4",
+   "doc_id": "rag_paper",
+   "category": "numeric_table",
+   "question": "What Exact Match score does RAG-Sequence achieve on Natural Questions in the open-domain QA test results?",
+   "gold_answer": "44.5 Exact Match.",
+   "gold_pages": [
+    6
+   ],
+   "evidence": [
+    "RAG-Seq. 44.5 56.8/68.0 45.2 52.2"
+   ],
+   "keywords": [
+    "44.5"
+   ]
+  },
+  {
+   "id": "rag_paper_q5",
+   "doc_id": "rag_paper",
+   "category": "numeric_table",
+   "question": "How many test instances does the Natural Questions dataset used in the experiments contain?",
+   "gold_answer": "3,611 test instances.",
+   "gold_pages": [
+    19
+   ],
+   "evidence": [
+    "Natural Questions 79169 8758 3611"
+   ],
+   "keywords": [
+    "3611"
+   ]
+  },
+  {
+   "id": "rag_paper_q6",
+   "doc_id": "rag_paper",
+   "category": "multi_hop",
+   "question": "How many retrieved documents are used at test time for RAG-Token on open-domain QA, and at how many retrieved documents does RAG-Token's open-domain QA performance peak?",
+   "gold_answer": "Test results use 15 retrieved documents for RAG-Token, while its open-domain QA performance peaks at 10 retrieved documents.",
+   "gold_pages": [
+    8,
+    17
+   ],
+   "evidence": [
+    "performance peaks for RAG-Token at 10 retrieved documents",
+    "we report test numbers using 15 retrieved documents for RAG-Token models"
+   ],
+   "keywords": [
+    "15",
+    "10"
+   ]
+  },
+  {
+   "id": "rag_paper_q7",
+   "doc_id": "rag_paper",
+   "category": "multi_hop",
+   "question": "How is Wikipedia split to build the document index, and what is the dimensionality of the resulting index vectors?",
+   "gold_answer": "Each article is split into disjoint 100-word chunks (21M documents), each stored as a 728-dimensional vector.",
+   "gold_pages": [
+    4,
+    19
+   ],
+   "evidence": [
+    "Each Wikipedia article is split into disjoint 100-word chunks, to make a total of 21M documents",
+    "does consists of 21M 728 dimensional vectors, consisting of 15.3B values"
+   ],
+   "keywords": [
+    "100-word",
+    "728"
+   ]
+  },
+  {
+   "id": "rag_paper_q8",
+   "doc_id": "rag_paper",
+   "category": "summary",
+   "question": "What is the purpose of this paper and how is it organised?",
+   "gold_answer": "The paper introduces retrieval-augmented generation (RAG), a general-purpose fine-tuning recipe that combines a pre-trained seq2seq generator (BART) as parametric memory with a dense Wikipedia index accessed by a pre-trained DPR retriever as non-parametric memory, comparing RAG-Sequence and RAG-Token formulations. It is organised into an introduction, methods (models, retriever, generator, training, decoding), experiments and results on open-domain QA, abstractive QA, Jeopardy question generation and FEVER fact verification plus ablations and index hot-swapping, then related work, discussion, broader impact and appendices with implementation details.",
+   "gold_pages": [
+    1,
+    2
+   ],
+   "evidence": [
+    "We introduce RAG models where the parametric memory is a pre-trained seq2seq model and the non-parametric memory is a dense vector index of Wikipedia",
+    "and fine-tune end-to-end"
+   ],
+   "keywords": []
+  },
+  {
+   "id": "rag_paper_q9",
+   "doc_id": "rag_paper",
+   "category": "unanswerable",
+   "question": "What learning rate was used when fine-tuning the RAG models?",
+   "gold_answer": "NOT_IN_DOCUMENT",
+   "gold_pages": [],
+   "evidence": [],
+   "keywords": []
+  },
+  {
+   "id": "nist_ai_rmf_q1",
+   "doc_id": "nist_ai_rmf",
+   "category": "factual",
+   "question": "What three major categories of AI bias has NIST identified?",
+   "gold_answer": "Systemic, computational and statistical, and human-cognitive bias.",
+   "gold_pages": [
+    23
+   ],
+   "evidence": [
+    "three major categories of AI bias to be considered and managed: systemic, computational and statistical, and human-cognitive"
+   ],
+   "keywords": [
+    "systemic",
+    "statistical",
+    "human-cognitive"
+   ]
+  },
+  {
+   "id": "nist_ai_rmf_q2",
+   "doc_id": "nist_ai_rmf",
+   "category": "factual",
+   "question": "Which law directed the development of the AI RMF?",
+   "gold_answer": "The National Artificial Intelligence Initiative Act of 2020 (P.L. 116-283).",
+   "gold_pages": [
+    7
+   ],
+   "evidence": [
+    "As directed by the National Artificial Intelligence Initiative Act of 2020 (P.L. 116-283)"
+   ],
+   "keywords": [
+    "National Artificial Intelligence Initiative Act"
+   ]
+  },
+  {
+   "id": "nist_ai_rmf_q3",
+   "doc_id": "nist_ai_rmf",
+   "category": "factual",
+   "question": "Which trustworthiness characteristic is described as a necessary condition of trustworthiness and the base for the others?",
+   "gold_answer": "Valid and reliable.",
+   "gold_pages": [
+    17
+   ],
+   "evidence": [
+    "Valid & Reliable is a necessary condition of trustworthiness"
+   ],
+   "keywords": [
+    "valid",
+    "reliable"
+   ]
+  },
+  {
+   "id": "nist_ai_rmf_q4",
+   "doc_id": "nist_ai_rmf",
+   "category": "numeric_table",
+   "question": "By what year is a review of the AI RMF with formal input from the AI community expected to take place?",
+   "gold_answer": "No later than 2028.",
+   "gold_pages": [
+    3
+   ],
+   "evidence": [
+    "a review with formal input from the AI community is expected to take place no later than 2028"
+   ],
+   "keywords": [
+    "2028"
+   ]
+  },
+  {
+   "id": "nist_ai_rmf_q5",
+   "doc_id": "nist_ai_rmf",
+   "category": "numeric_table",
+   "question": "According to the OECD framework adopted in the AI RMF, how many key socio-technical dimensions are used to classify AI lifecycle activities?",
+   "gold_answer": "Five key socio-technical dimensions.",
+   "gold_pages": [
+    14
+   ],
+   "evidence": [
+    "five key socio-technical dimensions, each with properties relevant for AI policy"
+   ],
+   "keywords": [
+    "five"
+   ]
+  },
+  {
+   "id": "nist_ai_rmf_q6",
+   "doc_id": "nist_ai_rmf",
+   "category": "multi_hop",
+   "question": "Which AI RMF function is designed to be cross-cutting, and which function do most users start with after instituting its outcomes?",
+   "gold_answer": "GOVERN is the cross-cutting function; after instituting GOVERN outcomes, most users start with the MAP function.",
+   "gold_pages": [
+    26,
+    27
+   ],
+   "evidence": [
+    "most users of the AI RMF would start with the MAP function",
+    "GOVERN is a cross-cutting function that is infused throughout AI risk management"
+   ],
+   "keywords": [
+    "GOVERN",
+    "MAP"
+   ]
+  },
+  {
+   "id": "nist_ai_rmf_q7",
+   "doc_id": "nist_ai_rmf",
+   "category": "multi_hop",
+   "question": "Which trustworthiness characteristic is depicted as a vertical box because it relates to all other characteristics, and which MEASURE subcategory examines the risks associated with it?",
+   "gold_answer": "Accountable and transparent; MEASURE 2.8 examines and documents risks associated with transparency and accountability.",
+   "gold_pages": [
+    17,
+    35
+   ],
+   "evidence": [
+    "Accountable & Transparent is shown as a vertical box because it relates to all other characteristics",
+    "MEASURE 2.8: Risks associated with transparency"
+   ],
+   "keywords": [
+    "2.8",
+    "transparen"
+   ]
+  },
+  {
+   "id": "nist_ai_rmf_q8",
+   "doc_id": "nist_ai_rmf",
+   "category": "summary",
+   "question": "What is the purpose of this document and how is it organised?",
+   "gold_answer": "The NIST AI RMF 1.0 is a voluntary, rights-preserving, non-sector-specific framework to help organizations manage the risks of AI systems and promote trustworthy and responsible AI. Part 1 frames AI risk, describes the audience, and outlines the characteristics of trustworthy AI; Part 2 presents the Core's four functions (GOVERN, MAP, MEASURE, MANAGE) with categories and subcategories, plus AI RMF profiles, followed by appendices on AI actor tasks, how AI risks differ from traditional software, human-AI interaction, and framework attributes.",
+   "gold_pages": [
+    7,
+    8
+   ],
+   "evidence": [
+    "The Framework is divided into two parts. Part 1 discusses how organizations can frame",
+    "It describes four specific functions to help organizations address the risks of AI systems in practice"
+   ],
+   "keywords": []
+  },
+  {
+   "id": "nist_ai_rmf_q9",
+   "doc_id": "nist_ai_rmf",
+   "category": "unanswerable",
+   "question": "How much funding did NIST allocate to developing the AI RMF 1.0?",
+   "gold_answer": "NOT_IN_DOCUMENT",
+   "gold_pages": [],
+   "evidence": [],
+   "keywords": []
+  }
+ ]
+}

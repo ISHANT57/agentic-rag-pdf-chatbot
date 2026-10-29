@@ -1,0 +1,8 @@
+rag_data/
+__pycache__/
+.ipynb_checkpoints/
+*.pyc
+.venv/
+checkoncolab*.ipynb
+*.zip
+AI.ipynb
