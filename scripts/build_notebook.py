@@ -43,7 +43,8 @@ def gate_cell(src: str, flag: str = "RUN_BENCHMARK") -> str:
                                            ("print", "display")):
         seg = ast.get_source_segment(body, last.value)
         start, end = last.lineno, last.end_lineno
-        lines[start - 1:end] = [f"    display({seg})"]
+        # Calls such as df.to_json(...) or plt.show() return None; Jupyter would show nothing for them either.
+        lines[start - 1:end] = [f"    _last = ({seg})", "    if _last is not None:", "        display(_last)"]
     return "\n".join([title, f"if {flag}:", *lines])
 
 

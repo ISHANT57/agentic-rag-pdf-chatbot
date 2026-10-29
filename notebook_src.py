@@ -555,16 +555,17 @@ def extract_pages(doc: fitz.Document, cfg: Config = CFG, llm: Optional[OllamaLLM
     pages, figure_budget = [], cfg.max_figure_pages
     for i, page in enumerate(doc):
         text = _IMG_PLACEHOLDER.sub("", texts[i] or "").strip()
-        ocr = False
+        # No text layer of its own, yet PyMuPDF4LLM returned text: it ran Tesseract on the page itself.
+        ocr = len(page.get_text("text").strip()) < cfg.ocr_min_chars and len(text) >= cfg.ocr_min_chars
         if len(text) < cfg.ocr_min_chars and HAS_OCR:
             ocr_text = ocr_page(page, cfg.ocr_dpi).strip()
             if len(ocr_text) > len(text):
                 text, ocr = ocr_text, True
         figures = ""
         if llm and cfg.enable_figure_captions and figure_budget > 0 and page_has_figure(page, text):
+            figure_budget -= 1   # spent on failures too, so a model that cannot read images stays bounded
             try:
                 figures = describe_figures(page, llm)
-                figure_budget -= 1
             except Exception as e:
                 log.warning("Figure description failed on page %d: %s", i + 1, e)
         pages.append({"page": i + 1, "text": text, "ocr": ocr, "figures": figures})
@@ -1033,8 +1034,14 @@ class KnowledgeBase:
         info = self.docs[doc_id]
         chunks = [c for c in self.index.chunks if c.doc_id == doc_id and c.kind not in ("figure", "table")]
         text = "\n\n".join(f"(p. {c.pages[0]}) {c.text}" for c in chunks)
-        size = max(self.cfg.summary_batch_chars, len(text) // self.cfg.summary_max_batches + 1)
+        # Batches must fit num_ctx (about 3.5 characters per token). A very long document is summarised from
+        # evenly spaced batches, so the time stays bounded by summary_max_batches.
+        size = min(max(self.cfg.summary_batch_chars, len(text) // self.cfg.summary_max_batches + 1),
+                   int(self.cfg.num_ctx * 2.5))
         batches = [text[i:i + size] for i in range(0, len(text), size)]
+        if len(batches) > self.cfg.summary_max_batches:
+            step = len(batches) / self.cfg.summary_max_batches
+            batches = [batches[int(k * step)] for k in range(self.cfg.summary_max_batches)]
         if len(batches) == 1:
             partials = batches
         else:
@@ -1056,7 +1063,7 @@ KB = KnowledgeBase()
 
 # %% [markdown]
 # ## 7. The agent (LangGraph)
-# Each node does one job and writes a human-readable `trace` entry, which the UI shows live. Every control decision uses a JSON-schema-constrained LLM call. Loops are bounded, so the worst case is `2 + max_iterations` retrieval rounds.
+# Each node does one job and writes a human-readable `trace` entry, which the UI shows live. Every control decision uses a JSON-schema-constrained LLM call. Loops are bounded, so the worst case is `1 + max_iterations` retrieval rounds.
 
 # %%
 # @title 7.1 Prompts
@@ -1173,6 +1180,19 @@ class AgentState(TypedDict, total=False):
 
 def page_label(pages: list) -> str:
     return f"p. {pages[0]}" if len(pages) == 1 else f"pp. {pages[0]}-{pages[-1]}"
+
+
+_CITE_LIST = re.compile(r"\[S\d+(?:\s*[,;–-]\s*S?\d+)+\]")
+
+
+def expand_cites(ans: str) -> str:
+    """Rewrite citation lists such as [S1, S3] or [S2-S4] as [S1][S3] / [S2][S3][S4]."""
+    def one(m):
+        nums = [int(n) for n in re.findall(r"\d+", m.group(0))]
+        if len(nums) == 2 and re.search(r"[–-]", m.group(0)) and 0 < nums[1] - nums[0] <= 10:
+            nums = list(range(nums[0], nums[1] + 1))
+        return "".join(f"[S{n}]" for n in nums)
+    return _CITE_LIST.sub(one, ans or "")
 
 
 def fmt_sources(evidence: list, max_chars: int = 1800) -> str:
@@ -1297,12 +1317,16 @@ def build_agent(kb: KnowledgeBase, llm: OllamaLLM, cfg: Config = CFG):
 
     def verify(s: AgentState):
         out = llm.json([{"role": "user", "content": VERIFY_PROMPT.format(
-            sources=fmt_sources(s["evidence"], 1200), question=s["standalone"], answer=s["answer"])}],
+            sources=fmt_sources(s["evidence"]), question=s["standalone"], answer=s["answer"])}],
             SCHEMAS["verify"], max_tokens=150)
-        grounded, complete = bool(out.get("grounded", True)), bool(out.get("complete", True))
+        # Some Ollama versions skip the grammar for qwen3.5 (see 3.2), so booleans may arrive as strings.
+        as_bool = lambda v: v if isinstance(v, bool) else str(v).strip().lower() == "true"
+        grounded, complete = as_bool(out.get("grounded")), as_bool(out.get("complete"))
         it = s.get("iterations", 0)
         upd = {"iterations": it}
-        if grounded and complete:
+        if not out:   # unreadable verdict: keep the answer but do not claim it was verified
+            decision, status = "finalize", "unverified"
+        elif grounded and complete:
             decision, status = "finalize", "answered"
         elif it >= cfg.max_iterations:
             decision, status = "finalize", ("partial" if grounded else "unverified")
@@ -1356,7 +1380,7 @@ _CITE = re.compile(r"\[S(\d+)\]")
 
 def render_answer(res: dict) -> str:
     """Final Markdown for the user: answer with [S#] tags and a deduplicated list of the sources it cites."""
-    ans, ev = res.get("answer", ""), res.get("evidence", [])
+    ans, ev = expand_cites(res.get("answer", "")), res.get("evidence", [])
     if res.get("status") in ("not_found", "chitchat") or not ev:
         return ans
     cited = sorted({int(n) for n in _CITE.findall(ans) if 0 < int(n) <= len(ev)})
@@ -1378,7 +1402,7 @@ def render_answer(res: dict) -> str:
 
 def cited_pages(res: dict) -> set:
     ev = res.get("evidence", [])
-    nums = {int(n) for n in _CITE.findall(res.get("answer", "")) if 0 < int(n) <= len(ev)}
+    nums = {int(n) for n in _CITE.findall(expand_cites(res.get("answer", ""))) if 0 < int(n) <= len(ev)}
     return {p for n in nums for p in ev[n - 1]["pages"]}
 
 
@@ -1601,7 +1625,7 @@ if not LOCAL_TEST:
 # |---|---|---|---|
 # | `naive_rag` | dense top-5 | 1 | Common baseline: embed, retrieve, generate |
 # | `advanced_rag` | hybrid + RRF + rerank top-6 | 1 | Better retrieval, no agent |
-# | `agentic_rag` | hybrid + rerank + agent loop | 3–8 | This notebook's full system |
+# | `agentic_rag` | hybrid + rerank + agent loop | 2–10 | This notebook's full system |
 #
 # **Metrics**
 # * *Retrieval* (no LLM): Hit@1/3/5 (a gold page is among the top-k passages), MRR@10, Evidence Recall@5 (a gold evidence quote is inside the retrieved text).
@@ -1857,18 +1881,27 @@ def norm_answer(t: str) -> str:
     return re.sub(r"\s+", " ", t)
 
 
+DIGIT_WORDS = {v: k for k, v in NUM_WORDS.items()}
+
+
 def keyword_hit(answer: str, keywords: list) -> float:
     a = norm_answer(answer)
     ok = []
     for k in keywords:
         k = norm_answer(k)
-        alt = NUM_WORDS.get(k)
-        ok.append(k in a or (alt is not None and re.search(rf"\b{alt}\b", a) is not None))
+        if re.fullmatch(r"\d+(?:\.\d+)?", k):   # "6" must not match "2016" or "6.5"
+            hit = re.search(rf"(?<![\d.]){re.escape(k)}(?!\.?\d)", a) is not None
+            hit = hit or (k in DIGIT_WORDS and re.search(rf"\b{DIGIT_WORDS[k]}\b", a) is not None)
+        else:
+            alt = NUM_WORDS.get(k)
+            hit = k in a or (alt is not None and re.search(rf"(?<![\d.]){alt}(?!\.?\d)", a) is not None)
+        ok.append(hit)
     return float(all(ok))
 
 
 def token_f1(pred: str, gold: str) -> float:
-    p, g = norm_answer(pred).split(), norm_answer(gold).split()
+    tok = lambda t: [w for w in (x.strip(".,;:!?()[]\"'*`") for x in norm_answer(t).split()) if w]
+    p, g = tok(pred), tok(gold)
     common = Counter(p) & Counter(g)
     same = sum(common.values())
     if same == 0:
@@ -1929,15 +1962,28 @@ JUDGE = OllamaLLM(CFG.judge_model, usage=UsageTracker())
 grades, faith = [], []
 t0 = time.time()
 for i, r in enumerate(runs_df.itertuples()):
-    out = JUDGE.json([{"role": "user", "content": JUDGE_CORRECT.format(
-        question=r.question, gold=r.gold, answer=r.answer)}], J_SCHEMAS["correct"], max_tokens=250)
-    grades.append({"correct": 1.0, "partial": 0.5, "incorrect": 0.0}.get(out.get("grade"), np.nan))
+    # Unanswerable questions have a deterministic answer: refusing is correct. The 4B judge once graded a
+    # correct refusal as wrong, so these are not sent to it.
+    if not r.answerable:
+        grades.append(1.0 if r.refused else 0.0)
+    else:
+        try:
+            out = JUDGE.json([{"role": "user", "content": JUDGE_CORRECT.format(
+                question=r.question, gold=r.gold, answer=r.answer)}], J_SCHEMAS["correct"], max_tokens=250)
+        except Exception as e:   # one failed call must not stop Run all; it is counted as a parse failure
+            log.warning("Judge failed on %s/%s: %s", r.system, r.qid, e)
+            out = {}
+        grades.append({"correct": 1.0, "partial": 0.5, "incorrect": 0.0}.get(out.get("grade"), np.nan))
     if r.refused or not r.context:
         faith.append(np.nan)
     else:
-        out = JUDGE.json([{"role": "user", "content": JUDGE_FAITHFUL.format(
-            context=r.context[:30000], answer=r.answer)}], J_SCHEMAS["faithful"], max_tokens=600)
-        claims = out.get("claims") or []
+        try:
+            out = JUDGE.json([{"role": "user", "content": JUDGE_FAITHFUL.format(
+                context=r.context[:30000], answer=r.answer)}], J_SCHEMAS["faithful"], max_tokens=600)
+        except Exception as e:
+            log.warning("Faithfulness judge failed on %s/%s: %s", r.system, r.qid, e)
+            out = {}
+        claims = [c for c in (out.get("claims") or []) if isinstance(c, dict)]
         faith.append(np.mean([bool(c.get("supported")) for c in claims]) if claims else np.nan)
     print(f"\rjudged {i + 1}/{len(runs_df)}", end="")
 print(f" ({time.time() - t0:.0f}s)")
@@ -2193,7 +2239,8 @@ except ValueError as e:
 if "attention" in DOC_IDS:
     r = ask("How many identical layers are in the Transformer encoder?")
     src_names = {h["source"] for h in r.get("evidence", [])}
-    check("Multi-document search finds the right document", "6" in r["answer"] and any("1706" in s for s in src_names),
+    check("Multi-document search finds the right document",
+          bool(re.search(r"\b6\b", _CITE.sub("", r["answer"]))) and any("1706" in s for s in src_names),
           f"sources={src_names}")
 
 # 7) Chit-chat route does not trigger retrieval.
@@ -2233,8 +2280,8 @@ except ValueError as e:
 # 10) Document filter: a question about the Transformer must not be answered from the sales paper.
 if "attention" in DOC_IDS:
     r = ask("How many identical layers are in the Transformer encoder?", doc_filter=DEMO_DOC)
-    check("Document filter is respected", r["status"] == "not_found" or "6" not in r["answer"] or
-          all(h["doc_id"] in DEMO_DOC for h in r.get("evidence", [])),
+    # The sales paper has no encoder, so the Transformer's "6 layers" must not appear in the answer.
+    check("Document filter is respected", r["status"] == "not_found" or not re.search(r"\b6\b", _CITE.sub("", r["answer"])),
           f"status={r['status']}; answer: {r['answer'][:100]}")
 
 # Remove the test PDFs again, so the poisoned document cannot reach later chats over "All documents".

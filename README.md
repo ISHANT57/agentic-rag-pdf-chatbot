@@ -37,12 +37,12 @@ An open-source chatbot that answers questions about any PDF you upload. It is bu
 | Hybrid (RRF) | 0.857 | 1.000 | 0.907 | 0.893 |
 | Hybrid + rerank | 0.857 | 1.000 | 0.911 | **0.964** |
 
-- **Robustness suite:** 9/10 checks passed (OCR, out-of-scope refusal, prompt injection in the message and inside a PDF, chat memory, corrupt and blank files, document filter, multi-document search, chit-chat routing). The failing check, scanned-PDF OCR, answered correctly; only its OCR page counter read 0, because PyMuPDF4LLM ran the OCR itself.
+- **Robustness suite:** 9/10 checks passed (OCR, out-of-scope refusal, prompt injection in the message and inside a PDF, chat memory, corrupt and blank files, document filter, multi-document search, chit-chat routing). The failing check, scanned-PDF OCR, answered correctly; only its OCR page counter read 0, because PyMuPDF4LLM ran the OCR itself. The counter is fixed in the current notebook.
 - **Peak GPU memory:** 9.5 GB of the T4's 15 GB. **Ingestion:** 4.6 s per page, including figure descriptions.
 - **Honest limits:**
   - The agent's gain over advanced RAG (+0.014 correctness) is not statistically significant on 36 questions; the 95% CI includes 0.
   - It costs about 4x the latency.
-  - All three systems lose 0.25 on "unanswerable" in the judge table because the judge graded one correct refusal (`reference_paper_q9`) as wrong; the deterministic refusal accuracy is 1.0 for all three.
+  - All three systems lose 0.25 on "unanswerable" in the judge table because the judge graded one correct refusal (`reference_paper_q9`) as wrong; the deterministic refusal accuracy is 1.0 for all three. The current notebook scores unanswerable questions with the refusal check instead of the judge, which gives 0.903 / 0.944 / 0.958 on all 36 questions.
 
 ![Benchmark](results/benchmark.png)
 ![Retrieval ablation](results/retrieval.png)
