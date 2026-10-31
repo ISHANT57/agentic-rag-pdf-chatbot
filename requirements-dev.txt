@@ -1,0 +1,3 @@
+pytest>=8
+pymupdf>=1.24.10
+langchain-text-splitters>=0.3.0
