@@ -545,6 +545,8 @@ def describe_figures(page: fitz.Page, llm: OllamaLLM) -> str:
 
 def extract_pages(doc: fitz.Document, cfg: Config = CFG, llm: Optional[OllamaLLM] = None, progress=print) -> list:
     """Returns a list of dicts: {page (1-based), text (Markdown), ocr (bool), figures (str)}."""
+    # Measured before PyMuPDF4LLM runs: its own OCR can add a text layer to scanned pages.
+    native_chars = [len(p.get_text("text").strip()) for p in doc]
     try:
         md_pages = pymupdf4llm.to_markdown(doc, page_chunks=True, show_progress=False)
         texts = [p["text"] for p in md_pages]
@@ -558,7 +560,7 @@ def extract_pages(doc: fitz.Document, cfg: Config = CFG, llm: Optional[OllamaLLM
     for i, page in enumerate(doc):
         text = _IMG_PLACEHOLDER.sub("", texts[i] or "").strip()
         # No text layer of its own, yet PyMuPDF4LLM returned text: it ran Tesseract on the page itself.
-        ocr = len(page.get_text("text").strip()) < cfg.ocr_min_chars and len(text) >= cfg.ocr_min_chars
+        ocr = native_chars[i] < cfg.ocr_min_chars and len(text) >= cfg.ocr_min_chars
         if len(text) < cfg.ocr_min_chars and HAS_OCR:
             ocr_text = ocr_page(page, cfg.ocr_dpi).strip()
             if len(ocr_text) > len(text):
@@ -1620,21 +1622,21 @@ if not LOCAL_TEST:
 # %% [markdown]
 # ## 10. Benchmark & ablations
 #
-# ### Results from a full run on a free Colab T4 (2026-10-29)
-# These numbers come from running this notebook end to end; the cells below reproduce them. Full report, charts and the executed notebook: `results/` in the GitHub repository ([REPORT.md](https://github.com/ISHANT57/agentic-rag-pdf-chatbot/blob/main/results/REPORT.md)).
+# ### Results from a full run on a free Colab T4 (2026-10-31)
+# These numbers come from running this notebook end to end; the cells below reproduce them. Full report, charts and per-answer scores: `results/` in the GitHub repository ([REPORT.md](https://github.com/ISHANT57/agentic-rag-pdf-chatbot/blob/main/results/REPORT.md)).
 #
-# | Metric | naive RAG | advanced RAG | **agentic RAG** |
+# | Metric | naive RAG | advanced RAG | agentic RAG |
 # |:--|--:|--:|--:|
-# | Correctness, answerable questions (LLM judge) | 0.891 | 0.938 | **0.953** |
-# | Correctness, all 36 questions (unanswerable scored by the refusal check) | 0.903 | 0.944 | **0.958** |
+# | Correctness, answerable questions (LLM judge) | 0.906 | **0.953** | **0.953** |
+# | Correctness, all 36 questions | 0.917 | **0.958** | **0.958** |
 # | Keyword accuracy | 0.786 | 0.929 | 0.929 |
-# | Faithfulness | 0.985 | 0.973 | 0.954 |
+# | Faithfulness | 0.969 | 0.973 | 0.954 |
 # | Citation page accuracy | 0.963 | 1.000 | 1.000 |
 # | Refusal accuracy, unanswerable | 1.000 | 1.000 | 1.000 |
 # | False refusal rate, answerable | 0.031 | 0.031 | **0.000** |
-# | Latency mean / p95 (s) | 6.5 / 10.2 | 6.1 / 9.3 | 26.3 / 101.2 |
+# | Latency mean / p95 (s) | 6.4 / 10.5 | 6.9 / 10.2 | 29.8 / 84.9 |
 #
-# Retrieval (page-level, hybrid + rerank): Hit@5 1.000, MRR@10 0.911, evidence recall@5 0.964. Robustness suite: 9/10 (the scanned-PDF check answered correctly but its OCR page counter read 0; fixed since). Peak GPU memory 9.5 GB. The agent's gain over advanced RAG is not statistically significant on 36 questions, and it costs about 4x the latency.
+# Retrieval (page-level, hybrid + rerank): Hit@5 1.000, MRR@10 0.911, evidence recall@5 0.964. Robustness suite: 9/10 (the scanned-PDF check answered correctly but its OCR page counter read 0; the counter is fixed after this run). Peak GPU memory 9.6 GB. On 36 questions the agent ties advanced RAG on correctness; it has no false refusals and full marks on summary questions, at about 4x the latency.
 #
 # **Test set**: 36 hand-written questions over 4 public PDFs of different kinds: two classic NLP papers, the sales-forecasting paper from the reference notebook, and a 48-page NIST policy framework. Every answerable question has gold page numbers and **verbatim evidence quotes**; cell 10.2 checks every quote against the indexed text of its PDF. Categories per document: 3 factual, 2 numeric/table, 2 multi-hop (evidence on different pages), 1 summary, 1 unanswerable.
 #
@@ -2154,7 +2156,8 @@ def md_table(df: pd.DataFrame) -> str:
 
 
 gpu_name = sh("nvidia-smi --query-gpu=name --format=csv,noheader", check=False, quiet=True).strip() or "CPU"
-best = summary_df.correctness_answerable.idxmax()
+_top = summary_df.correctness_answerable.max()
+best = " / ".join(f"`{s}`" for s in summary_df.index[summary_df.correctness_answerable == _top])   # ties are listed
 report = f"""# Benchmark report
 
 * **Hardware**: {gpu_name} · **LLM**: `{CFG.llm_model}` · **Judge**: `{CFG.judge_model}` · **Embeddings**: `{CFG.embed_model}` · **Reranker**: `{CFG.rerank_model}`
@@ -2182,7 +2185,7 @@ Judge vs keyword-check agreement: {agree:.2f} · judge parse failures: {judge_fa
 ## Ingestion
 {md_table(ingest_df.set_index('doc'))}
 
-**Best system on answerable-question correctness: `{best}`.**
+**Best system on answerable-question correctness: {best}.**
 """
 with open(os.path.join(BENCH_DIR, "REPORT.md"), "w") as f:
     f.write(report)

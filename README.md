@@ -4,7 +4,7 @@ An open-source chatbot that answers questions about any PDF you upload. It is bu
 
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ISHANT57/agentic-rag-pdf-chatbot/blob/main/Agentic_RAG_PDF_Chatbot.ipynb)
 
-**Deliverable:** [`Agentic_RAG_PDF_Chatbot.ipynb`](Agentic_RAG_PDF_Chatbot.ipynb) · **Results:** [`results/REPORT.md`](results/REPORT.md) · **Executed T4 run:** [`results/Agentic_RAG_PDF_Chatbot_T4_run.ipynb`](results/Agentic_RAG_PDF_Chatbot_T4_run.ipynb)
+**Deliverable:** [`Agentic_RAG_PDF_Chatbot.ipynb`](Agentic_RAG_PDF_Chatbot.ipynb) · **Results:** [`results/REPORT.md`](results/REPORT.md) · **Executed notebook (earlier T4 run, 2026-10-29):** [`results/Agentic_RAG_PDF_Chatbot_T4_run_2026-10-29.ipynb`](results/Agentic_RAG_PDF_Chatbot_T4_run_2026-10-29.ipynb)
 
 ## What it does
 
@@ -14,35 +14,36 @@ An open-source chatbot that answers questions about any PDF you upload. It is bu
 - It says so when the document does not contain the answer, instead of guessing.
 - It keeps chat memory, so follow-up questions such as "which of them was best?" work.
 
-## Results (free Colab T4, 2026-10-29)
+## Results (free Colab T4, 2026-10-31)
 
-36 questions over 4 PDFs (88 pages). LLM `qwen3.5:9b`, judge `gemma3:4b`. Full report: [`results/REPORT.md`](results/REPORT.md).
+36 questions over 4 PDFs (88 pages). LLM `qwen3.5:9b`, judge `gemma3:4b`. Full report: [`results/REPORT.md`](results/REPORT.md) · scorecard: [`results/scorecard.json`](results/scorecard.json) · per-answer scores: [`results/scored_answers.jsonl`](results/scored_answers.jsonl).
 
-| | naive RAG | advanced RAG | **agentic RAG** |
+| | naive RAG | advanced RAG | agentic RAG |
 |:--|--:|--:|--:|
-| Correctness, answerable questions (LLM judge) | 0.891 | 0.938 | **0.953** |
-| Correctness, all 36 questions (LLM judge) | 0.875 | 0.917 | **0.931** |
+| Correctness, answerable questions (LLM judge) | 0.906 | **0.953** | **0.953** |
+| Correctness, all 36 questions | 0.917 | **0.958** | **0.958** |
 | Keyword accuracy | 0.786 | 0.929 | 0.929 |
-| Faithfulness (claims supported by context) | 0.985 | 0.973 | 0.954 |
+| Faithfulness (claims supported by context) | 0.969 | 0.973 | 0.954 |
 | Citation page accuracy | 0.963 | 1.000 | 1.000 |
 | Refusal accuracy, unanswerable questions | 1.000 | 1.000 | 1.000 |
 | False refusal rate, answerable questions | 0.031 | 0.031 | **0.000** |
-| Latency mean / p95 (s) | 6.5 / 10.2 | 6.1 / 9.3 | 26.3 / 101.2 |
-| LLM calls per question | 1.2 | 1.0 | 5.2 |
+| Correctness on summary questions | 0.875 | 0.875 | **1.000** |
+| Latency mean / p95 (s) | 6.4 / 10.5 | 6.9 / 10.2 | 29.8 / 84.9 |
+| LLM calls per question | 1.0 | 1.0 | 5.3 |
 
 | Retrieval (page-level) | Hit@1 | Hit@5 | MRR@10 | Evidence recall@5 |
 |:--|--:|--:|--:|--:|
 | BM25 | 0.893 | 0.964 | 0.918 | 0.875 |
 | Dense (bge-m3) | 0.786 | 0.964 | 0.872 | 0.804 |
-| Hybrid (RRF) | 0.857 | 1.000 | 0.907 | 0.893 |
+| Hybrid (RRF) | 0.857 | 1.000 | 0.907 | 0.911 |
 | Hybrid + rerank | 0.857 | 1.000 | 0.911 | **0.964** |
 
-- **Robustness suite:** 9/10 checks passed (OCR, out-of-scope refusal, prompt injection in the message and inside a PDF, chat memory, corrupt and blank files, document filter, multi-document search, chit-chat routing). The failing check, scanned-PDF OCR, answered correctly; only its OCR page counter read 0, because PyMuPDF4LLM ran the OCR itself. The counter is fixed in the current notebook.
-- **Peak GPU memory:** 9.5 GB of the T4's 15 GB. **Ingestion:** 4.6 s per page, including figure descriptions.
+- **Robustness suite:** 9/10 checks passed (out-of-scope refusal, prompt injection in the message and inside a PDF, chat memory, corrupt and blank files, document filter, multi-document search, chit-chat routing). The scanned-PDF check answered correctly ("1C Company"), but its OCR page counter read 0 because PyMuPDF4LLM's own OCR adds a text layer before the counter looked. The counter now measures the page before parsing; this run predates that fix.
+- **Peak GPU memory:** 9.6 GB of the T4's 15 GB. **Ingestion:** 5.1 s per page, including figure descriptions.
 - **Honest limits:**
-  - The agent's gain over advanced RAG (+0.014 correctness) is not statistically significant on 36 questions; the 95% CI includes 0.
-  - It costs about 4x the latency.
-  - All three systems lose 0.25 on "unanswerable" in the judge table because the judge graded one correct refusal (`reference_paper_q9`) as wrong; the deterministic refusal accuracy is 1.0 for all three. The current notebook scores unanswerable questions with the refusal check instead of the judge, which gives 0.903 / 0.944 / 0.958 on all 36 questions.
+  - On this test set the agent ties advanced RAG on correctness (0.953 vs 0.953; paired difference 0.000, 95% CI [-0.042, 0.042]). Its measurable gains are zero false refusals and full marks on summary questions; it trails on multi-hop (0.812 vs 0.875).
+  - It costs about 4x the latency (5.3 LLM calls per question).
+  - 36 questions are too few to separate the systems with statistical confidence.
 
 ![Benchmark](results/benchmark.png)
 ![Retrieval ablation](results/retrieval.png)

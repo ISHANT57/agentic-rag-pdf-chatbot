@@ -1,0 +1,4 @@
+system,judge_correctness,correctness_answerable,keyword_acc,token_f1,semantic_sim,faithfulness,citation_page_acc,refusal_acc_unanswerable,false_refusal_rate,latency_mean_s,latency_p50_s,latency_p95_s,llm_calls_mean,output_tokens_mean
+naive_rag,0.917,0.906,0.786,0.359,0.703,0.969,0.963,1.0,0.031,6.449,5.198,10.457,1.0,76.167
+advanced_rag,0.958,0.953,0.929,0.395,0.717,0.973,1.0,1.0,0.031,6.855,5.57,10.189,1.0,70.111
+agentic_rag,0.958,0.953,0.929,0.389,0.726,0.954,1.0,1.0,0.0,29.775,15.305,84.914,5.278,384.667

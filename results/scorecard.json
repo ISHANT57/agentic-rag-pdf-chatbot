@@ -1,0 +1,36 @@
+{
+ "hardware": "Tesla T4",
+ "llm": "qwen3.5:9b",
+ "embedder": "BAAI/bge-m3",
+ "reranker": "BAAI/bge-reranker-v2-m3",
+ "benchmark": {
+  "judge_correctness": 0.958,
+  "correctness_answerable": 0.953,
+  "keyword_acc": 0.929,
+  "token_f1": 0.389,
+  "semantic_sim": 0.726,
+  "faithfulness": 0.954,
+  "citation_page_acc": 1.0,
+  "refusal_acc_unanswerable": 1.0,
+  "false_refusal_rate": 0.0,
+  "latency_mean_s": 29.775,
+  "latency_p50_s": 15.305,
+  "latency_p95_s": 84.914,
+  "llm_calls_mean": 5.278,
+  "output_tokens_mean": 384.667
+ },
+ "benchmark_baselines": {
+  "naive_rag": {
+   "correctness_answerable": 0.906,
+   "faithfulness": 0.969,
+   "latency_mean_s": 6.449
+  },
+  "advanced_rag": {
+   "correctness_answerable": 0.953,
+   "faithfulness": 0.973,
+   "latency_mean_s": 6.855
+  }
+ },
+ "peak_vram_gb": 9.6,
+ "robustness": "9/10 checks passed"
+}

@@ -1,0 +1,6 @@
+category,naive_rag,advanced_rag,agentic_rag
+factual,1.0,1.0,1.0
+multi_hop,0.688,0.875,0.812
+numeric_table,1.0,1.0,1.0
+summary,0.875,0.875,1.0
+unanswerable,1.0,1.0,1.0
