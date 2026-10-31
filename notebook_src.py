@@ -34,6 +34,8 @@
 # 2. `Runtime → Run all`. Setup takes about 5–7 minutes (installs and model downloads).
 # 3. Use the **Gradio link** in section 9 to chat with your PDFs, or run section 10 to reproduce the benchmark (about 30–40 minutes for the full run; set `RAG_BENCH_LIMIT=12` for a quick run).
 #
+# **Benchmark results** (full T4 run): see the table at the start of section 10.
+#
 # ### Contents
 # 0. Architecture
 # 1. Runtime check & installation
@@ -1617,6 +1619,22 @@ if not LOCAL_TEST:
 
 # %% [markdown]
 # ## 10. Benchmark & ablations
+#
+# ### Results from a full run on a free Colab T4 (2026-10-29)
+# These numbers come from running this notebook end to end; the cells below reproduce them. Full report, charts and the executed notebook: `results/` in the GitHub repository ([REPORT.md](https://github.com/ISHANT57/agentic-rag-pdf-chatbot/blob/main/results/REPORT.md)).
+#
+# | Metric | naive RAG | advanced RAG | **agentic RAG** |
+# |:--|--:|--:|--:|
+# | Correctness, answerable questions (LLM judge) | 0.891 | 0.938 | **0.953** |
+# | Correctness, all 36 questions (unanswerable scored by the refusal check) | 0.903 | 0.944 | **0.958** |
+# | Keyword accuracy | 0.786 | 0.929 | 0.929 |
+# | Faithfulness | 0.985 | 0.973 | 0.954 |
+# | Citation page accuracy | 0.963 | 1.000 | 1.000 |
+# | Refusal accuracy, unanswerable | 1.000 | 1.000 | 1.000 |
+# | False refusal rate, answerable | 0.031 | 0.031 | **0.000** |
+# | Latency mean / p95 (s) | 6.5 / 10.2 | 6.1 / 9.3 | 26.3 / 101.2 |
+#
+# Retrieval (page-level, hybrid + rerank): Hit@5 1.000, MRR@10 0.911, evidence recall@5 0.964. Robustness suite: 9/10 (the scanned-PDF check answered correctly but its OCR page counter read 0; fixed since). Peak GPU memory 9.5 GB. The agent's gain over advanced RAG is not statistically significant on 36 questions, and it costs about 4x the latency.
 #
 # **Test set**: 36 hand-written questions over 4 public PDFs of different kinds: two classic NLP papers, the sales-forecasting paper from the reference notebook, and a 48-page NIST policy framework. Every answerable question has gold page numbers and **verbatim evidence quotes**; cell 10.2 checks every quote against the indexed text of its PDF. Categories per document: 3 factual, 2 numeric/table, 2 multi-hop (evidence on different pages), 1 summary, 1 unanswerable.
 #
