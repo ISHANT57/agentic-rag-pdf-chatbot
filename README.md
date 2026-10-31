@@ -142,7 +142,8 @@ In Colab, set them in a new cell before cell 2.1, for example `%env RAG_LLM=qwen
   ```
 
   They load the helpers straight from `notebook_src.py`, so they need no GPU, no Ollama and no model downloads.
-- Smoke-test on a CPU-only machine without Ollama. Test mode skips the installs, so first install the packages from cell 1.2 plus `torch` (CPU), `pandas`, `matplotlib`, `jupyter` and `jupytext`:
+- A second CI job builds the notebook from `notebook_src.py` and runs every cell on CPU against the fake Ollama API, including the benchmark (8 questions), robustness suite and scorecard. It checks that every code path runs, not answer quality.
+- The same smoke test, locally, on a CPU-only machine without Ollama. Test mode skips the installs, so first install the packages from cell 1.2 plus `torch` (CPU), `pandas`, `matplotlib`, `jupyter` and `jupytext`:
 
   ```bash
   python tests/mock_ollama.py &          # fake Ollama API: exercises every code path, no quality signal
