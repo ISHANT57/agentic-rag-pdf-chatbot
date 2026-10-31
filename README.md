@@ -4,7 +4,7 @@ An open-source chatbot that answers questions about any PDF you upload. It is bu
 
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ISHANT57/agentic-rag-pdf-chatbot/blob/main/Agentic_RAG_PDF_Chatbot.ipynb)
 
-**Deliverable:** [`Agentic_RAG_PDF_Chatbot.ipynb`](Agentic_RAG_PDF_Chatbot.ipynb) · **Results:** [`results/REPORT.md`](results/REPORT.md) · **Executed notebook with all outputs (T4 run, 2026-10-31):** [`results/Agentic_RAG_PDF_Chatbot_T4_run_2026-10-31.ipynb`](results/Agentic_RAG_PDF_Chatbot_T4_run_2026-10-31.ipynb)
+**Deliverable:** [`Agentic_RAG_PDF_Chatbot.ipynb`](Agentic_RAG_PDF_Chatbot.ipynb), executed end to end on a free Colab T4 on 2026-10-31, with all outputs and benchmark metrics saved · **Results:** [`results/REPORT.md`](results/REPORT.md)
 
 ## What it does
 
@@ -132,7 +132,8 @@ In Colab, set them in a new cell before cell 2.1, for example `%env RAG_LLM=qwen
 ## Development
 
 - `notebook_src.py` is the source of truth, in jupytext percent format, so diffs are easy to read.
-- Build the notebook with `python scripts/build_notebook.py`. This also embeds the gold set.
+- Build the notebook with `python scripts/build_notebook.py`. This also embeds the gold set, and it writes a clean notebook without outputs over `Agentic_RAG_PDF_Chatbot.ipynb`.
+- `notebook_src.py` has two small fixes made after the 2026-10-31 run: the OCR page counter measures each page before PyMuPDF4LLM runs its own OCR, and the report lists every system that ties for best correctness. Neither changes the answers or the scores above.
 - Smoke-test on a CPU-only machine without Ollama. Test mode skips the installs, so first install the packages from cell 1.2 plus `torch` (CPU), `pandas`, `matplotlib`, `jupyter` and `jupytext`:
 
   ```bash
