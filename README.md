@@ -4,7 +4,7 @@ An open-source chatbot that answers questions about any PDF you upload. It is bu
 
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ISHANT57/agentic-rag-pdf-chatbot/blob/main/Agentic_RAG_PDF_Chatbot.ipynb)
 
-**Deliverable:** [`Agentic_RAG_PDF_Chatbot.ipynb`](Agentic_RAG_PDF_Chatbot.ipynb) · **Results:** [`results/REPORT.md`](results/REPORT.md) · **Executed notebook (earlier T4 run, 2026-10-29):** [`results/Agentic_RAG_PDF_Chatbot_T4_run_2026-10-29.ipynb`](results/Agentic_RAG_PDF_Chatbot_T4_run_2026-10-29.ipynb)
+**Deliverable:** [`Agentic_RAG_PDF_Chatbot.ipynb`](Agentic_RAG_PDF_Chatbot.ipynb) · **Results:** [`results/REPORT.md`](results/REPORT.md) · **Executed notebook with all outputs (T4 run, 2026-10-31):** [`results/Agentic_RAG_PDF_Chatbot_T4_run_2026-10-31.ipynb`](results/Agentic_RAG_PDF_Chatbot_T4_run_2026-10-31.ipynb)
 
 ## What it does
 
